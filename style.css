@@ -1,0 +1,221 @@
+/*
+Theme Name: Flavor Travel
+Theme URI: https://flavor-travel-theme.com
+Author: Tora
+Description: Tema para agencias de viajes
+Version: 1.0.0
+Text Domain: flavor-travel
+*/
+
+:root {
+    --primary: #0a1628;
+    --secondary: #1e3a5f;
+    --accent: #f59e0b;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-500: #6b7280;
+    --gray-900: #111827;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+body {
+    font-family: var(--font-body);
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+.section { 
+    padding: 80px 0; 
+    overflow: hidden;
+}
+
+.grid { display: grid; gap: 30px; }
+.grid--2 { grid-template-columns: repeat(2, 1fr); }
+.grid--3 { grid-template-columns: repeat(3, 1fr); }
+.grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+/* CONTINENTES GRID */
+.continentes-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+/* OFERTAS GRID */
+.ofertas-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.btn--primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn--primary:hover {
+    background: #d97706;
+}
+
+.btn--outline {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn--outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    line-height: 1.2;
+}
+
+a { color: inherit; transition: all 0.3s; text-decoration: none; }
+img { max-width: 100%; height: auto; display: block; }
+
+/* ===== FOOTER ===== */
+.site-footer {
+    background: var(--gray-900);
+    color: white;
+    padding: 60px 0 30px;
+    overflow: hidden;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-col h4 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.footer-col p,
+.footer-col a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+.footer-col a:hover { color: var(--accent); }
+
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 30px;
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.9rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .grid--4 { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: repeat(2, 1fr); }
+    .ofertas-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .section { padding: 50px 0; }
+    .container { padding: 0 16px; }
+    
+    .grid--2,
+    .grid--3,
+    .grid--4 { grid-template-columns: 1fr; }
+    
+    .footer-grid { grid-template-columns: 1fr; text-align: center; }
+    
+    /* Continentes: Grid 2 columnas */
+    .continentes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .continentes-grid > a {
+        aspect-ratio: 1/1.2;
+    }
+    
+    .continentes-grid > a:nth-child(5) {
+        grid-column: span 2;
+        aspect-ratio: 2.5/1;
+    }
+    
+    /* Ofertas 1 columna */
+    .ofertas-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container { padding: 0 12px; }
+    
+    .continentes-grid {
+        gap: 8px;
+    }
+    
+    .btn {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== ESTILOS PARA TEXTOS CON HTML ===== */
+.section-text a,
+.hero-desc a {
+    color: #2563eb;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+.section-text a:hover,
+.hero-desc a:hover {
+    color: #1d4ed8;
+}
+
+/* Enlaces en fondos oscuros */
+.dark-bg a {
+    color: #93c5fd;
+}
+.dark-bg a:hover {
+    color: #bfdbfe;
+}
