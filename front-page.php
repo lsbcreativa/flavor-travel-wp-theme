@@ -40,8 +40,8 @@ $tours_subtitle = get_theme_mod('flavor_tours_home_subtitle', 'Experiencias úni
 $tours_title = get_theme_mod('flavor_tours_home_title', 'Tours destacados');
 $destinos_subtitle = get_theme_mod('flavor_destinos_home_subtitle', 'Los más populares');
 $destinos_title = get_theme_mod('flavor_destinos_home_title', 'Destinos destacados');
-$cta_title = get_theme_mod('flavor_cta_title', '¿Listo para tu próxima aventura?');
-$cta_subtitle = get_theme_mod('flavor_cta_subtitle', 'Contáctanos y diseñaremos el viaje perfecto para ti.');
+$cta_title = get_theme_mod('flavor_cta_title', 'Llevamos la satisfacción de tus pasajeros al siguiente nivel');
+$cta_subtitle = get_theme_mod('flavor_cta_subtitle', 'Somos tu mayorista de confianza. Contáctanos.');
 $cta_button = get_theme_mod('flavor_cta_button', 'Consultar por WhatsApp');
 $trust1 = get_theme_mod('flavor_trust_1', 'Garantía mejor precio');
 $trust2 = get_theme_mod('flavor_trust_2', 'Hasta 12 cuotas sin interés');
@@ -58,7 +58,7 @@ $text_cta = get_theme_mod('flavor_cta_text', '');
 
 
 // Queries
-$continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false));
+$continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false, 'parent' => 0)); // Solo continentes padres
 $ofertas = flavor_get_items_con_descuento(4); // Obtiene destinos, tours y ofertas con descuento
 $tours = get_posts(array('post_type' => 'paquete', 'posts_per_page' => 6, 'meta_query' => flavor_get_vigencia_meta_query()));
 $destinos = get_posts(array('post_type' => 'destino', 'posts_per_page' => 6, 'meta_query' => flavor_get_vigencia_meta_query()));
@@ -548,15 +548,12 @@ $destinos = get_posts(array('post_type' => 'destino', 'posts_per_page' => 6, 'me
 <!-- OFERTAS -->
 <section style="padding: 80px 0; background: #0a1628;">
     <div class="container" style="max-width: 1280px; margin: 0 auto; padding: 0 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;">
-            <div>
-                <span style="color: #2563eb; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem;"><?php echo esc_html($ofertas_subtitle); ?></span>
-                <h2 style="font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.5rem); margin-top: 8px; color: white;"><?php echo esc_html($ofertas_title); ?></h2>
-                <?php if ($text_ofertas): ?>
-                <div style="color: rgba(255,255,255,0.7); margin-top: 12px; max-width: 500px; line-height: 1.7;"><?php echo wp_kses_post($text_ofertas); ?></div>
-                <?php endif; ?>
-            </div>
-            <a href="<?php echo get_post_type_archive_link('oferta'); ?>" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none;">Ver todas</a>
+        <div style="text-align: center; margin-bottom: 50px;">
+            <span style="color: #2563eb; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem;"><?php echo esc_html($ofertas_subtitle); ?></span>
+            <h2 style="font-family: var(--font-display); font-size: clamp(2rem, 5vw, 2.75rem); margin-top: 12px; color: white;"><?php echo esc_html($ofertas_title); ?></h2>
+            <?php if ($text_ofertas): ?>
+            <div style="color: rgba(255,255,255,0.7); margin-top: 16px; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.8;"><?php echo wp_kses_post($text_ofertas); ?></div>
+            <?php endif; ?>
         </div>
         <div class="ft-ofertas">
             <?php foreach ($ofertas as $post): setup_postdata($post);
@@ -586,6 +583,9 @@ $destinos = get_posts(array('post_type' => 'destino', 'posts_per_page' => 6, 'me
                 </div>
             </article>
             <?php endforeach; wp_reset_postdata(); ?>
+        </div>
+        <div style="text-align: center; margin-top: 50px;">
+            <a href="<?php echo get_post_type_archive_link('oferta'); ?>" style="display: inline-block; background: #2563eb; color: white; padding: 14px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='#1d4ed8';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#2563eb';this.style.transform='none'">Ver todas las ofertas</a>
         </div>
     </div>
 </section>
@@ -637,7 +637,7 @@ $destinos = get_posts(array('post_type' => 'destino', 'posts_per_page' => 6, 'me
             </article>
             <?php endforeach; wp_reset_postdata(); ?>
         </div>
-        <div style="text-align: center; margin-top: 40px;"><a href="<?php echo get_post_type_archive_link('paquete'); ?>" style="display: inline-block; border: 2px solid #0a1628; color: #0a1628; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none;">Ver todos los tours</a></div>
+        <div style="text-align: center; margin-top: 40px;"><a href="<?php echo home_url('/destinos/'); ?>" style="display: inline-block; border: 2px solid #0a1628; color: #0a1628; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none;">Ver todos los tours</a></div>
     </div>
 </section>
 <?php endif; ?>

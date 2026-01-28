@@ -21,31 +21,340 @@ add_action('wp_enqueue_scripts', 'flavor_scripts');
 
 // ========== CPT Y TAXONOMÍAS ==========
 function flavor_cpt() {
+    // Destino - CPT legacy, oculto del admin (no se usa)
     register_post_type('destino', array(
-        'labels' => array('name' => 'Destinos', 'singular_name' => 'Destino', 'add_new' => 'Agregar Destino', 'add_new_item' => 'Agregar Nuevo Destino'),
-        'public' => true, 'has_archive' => true, 'rewrite' => array('slug' => 'destinos'),
-        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'), 'menu_icon' => 'dashicons-location-alt', 'show_in_rest' => true,
+        'labels' => array('name' => 'Destinos', 'singular_name' => 'Destino'),
+        'public' => false,
+        'show_ui' => false,
+        'show_in_menu' => false,
+        'has_archive' => false,
+        'rewrite' => false,
     ));
     register_post_type('paquete', array(
         'labels' => array('name' => 'Tours', 'singular_name' => 'Tour', 'add_new' => 'Agregar Tour', 'add_new_item' => 'Agregar Nuevo Tour'),
-        'public' => true, 'has_archive' => true, 'rewrite' => array('slug' => 'tours'),
-        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'), 'menu_icon' => 'dashicons-palmtree', 'show_in_rest' => true,
+        'public' => true,
+        'has_archive' => false, // Sin página /tours/
+        'rewrite' => false, // URLs personalizadas via filtro
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'),
+        'menu_icon' => 'dashicons-palmtree',
+        'show_in_rest' => true,
     ));
     register_post_type('oferta', array(
         'labels' => array('name' => 'Ofertas', 'singular_name' => 'Oferta', 'add_new' => 'Agregar Oferta', 'add_new_item' => 'Agregar Nueva Oferta'),
         'public' => true, 'has_archive' => true, 'rewrite' => array('slug' => 'ofertas'),
         'supports' => array('title', 'editor', 'thumbnail', 'excerpt'), 'menu_icon' => 'dashicons-tag', 'show_in_rest' => true,
     ));
-    register_taxonomy('continente', array('destino', 'paquete', 'oferta'), array(
-        'labels' => array('name' => 'Continentes', 'singular_name' => 'Continente', 'add_new_item' => 'Agregar Continente'),
-        'hierarchical' => true, 'rewrite' => array('slug' => 'continente'), 'show_in_rest' => true,
+
+    // Salidas Confirmadas
+    register_post_type('salida_confirmada', array(
+        'labels' => array(
+            'name' => 'Salidas Confirmadas',
+            'singular_name' => 'Salida Confirmada',
+            'add_new' => 'Agregar Salida',
+            'add_new_item' => 'Agregar Nueva Salida Confirmada',
+            'edit_item' => 'Editar Salida Confirmada',
+            'view_item' => 'Ver Salida Confirmada',
+        ),
+        'public' => true, 'has_archive' => true, 'rewrite' => array('slug' => 'salidas-confirmadas'),
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'), 'menu_icon' => 'dashicons-calendar-alt', 'show_in_rest' => true,
+    ));
+
+    // Eventos Deportivos
+    register_post_type('evento_deportivo', array(
+        'labels' => array(
+            'name' => 'Eventos Deportivos',
+            'singular_name' => 'Evento Deportivo',
+            'add_new' => 'Agregar Evento',
+            'add_new_item' => 'Agregar Nuevo Evento Deportivo',
+            'edit_item' => 'Editar Evento Deportivo',
+            'view_item' => 'Ver Evento Deportivo',
+        ),
+        'public' => true, 'has_archive' => true, 'rewrite' => array('slug' => 'eventos-deportivos'),
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'), 'menu_icon' => 'dashicons-awards', 'show_in_rest' => true,
+    ));
+
+    // Taxonomía Continentes - Se asocia a tours, salidas y eventos
+    // show_in_menu => false para que no aparezca como submenú de cada CPT
+    // El menú principal se agrega por separado con add_menu_page
+    register_taxonomy('continente', array('paquete', 'oferta', 'salida_confirmada', 'evento_deportivo'), array(
+        'labels' => array(
+            'name' => 'Continentes',
+            'singular_name' => 'Continente',
+            'add_new_item' => 'Agregar Continente',
+            'edit_item' => 'Editar Continente',
+            'all_items' => 'Todos los Continentes',
+            'menu_name' => 'Continentes',
+        ),
+        'hierarchical' => true,
+        'rewrite' => false,
+        'show_in_rest' => true,
+        'show_ui' => true,
+        'show_in_menu' => false,
+        'show_admin_column' => true,
     ));
 }
 add_action('init', 'flavor_cpt');
 
+// Agregar menú separado para Continentes en el admin
+function flavor_add_continentes_menu() {
+    add_menu_page(
+        'Continentes',
+        'Continentes',
+        'manage_categories',
+        'edit-tags.php?taxonomy=continente',
+        '',
+        'dashicons-location-alt',
+        6
+    );
+}
+add_action('admin_menu', 'flavor_add_continentes_menu');
+
+// Resaltar el menú correcto cuando se edita un continente
+function flavor_highlight_continentes_menu($parent_file) {
+    global $current_screen;
+    if ($current_screen->taxonomy == 'continente') {
+        return 'edit-tags.php?taxonomy=continente';
+    }
+    return $parent_file;
+}
+add_filter('parent_file', 'flavor_highlight_continentes_menu');
+
+// ========== REWRITE RULES PARA CONTINENTES SIN PREFIJO ==========
+function flavor_continente_rewrite_rules() {
+    // Obtener todos los términos de continente para crear reglas específicas
+    $continentes = get_terms(array(
+        'taxonomy' => 'continente',
+        'hide_empty' => false,
+        'parent' => 0, // Solo padres (continentes principales)
+    ));
+
+    if (!is_wp_error($continentes) && !empty($continentes)) {
+        foreach ($continentes as $continente) {
+            // Regla para continentes principales: /america/
+            add_rewrite_rule(
+                '^' . $continente->slug . '/?$',
+                'index.php?continente=' . $continente->slug,
+                'top'
+            );
+
+            // Regla para subcategorías (países) O tours sin país: /america/peru/ o /america/tour-name/
+            // Usa flavor_check_slug para resolver la ambigüedad
+            add_rewrite_rule(
+                '^' . $continente->slug . '/([^/]+)/?$',
+                'index.php?flavor_parent_continente=' . $continente->slug . '&flavor_slug=$matches[1]',
+                'top'
+            );
+        }
+    }
+}
+add_action('init', 'flavor_continente_rewrite_rules', 11);
+
+// Modificar los permalinks de continentes
+function flavor_continente_term_link($termlink, $term, $taxonomy) {
+    if ($taxonomy === 'continente') {
+        $parent = $term->parent;
+        if ($parent) {
+            $parent_term = get_term($parent, 'continente');
+            if ($parent_term && !is_wp_error($parent_term)) {
+                return home_url('/' . $parent_term->slug . '/' . $term->slug . '/');
+            }
+        }
+        return home_url('/' . $term->slug . '/');
+    }
+    return $termlink;
+}
+add_filter('term_link', 'flavor_continente_term_link', 10, 3);
+
+// Flush rewrite rules cuando se crea/edita un continente
+function flavor_flush_on_term_change($term_id, $tt_id, $taxonomy) {
+    if ($taxonomy === 'continente') {
+        flush_rewrite_rules();
+    }
+}
+add_action('created_term', 'flavor_flush_on_term_change', 10, 3);
+add_action('edited_term', 'flavor_flush_on_term_change', 10, 3);
+
+// ========== REWRITE RULES PARA TOURS (continente/pais/tour-name) ==========
+function flavor_tour_rewrite_rules() {
+    $continentes = get_terms(array(
+        'taxonomy' => 'continente',
+        'hide_empty' => false,
+        'parent' => 0,
+    ));
+
+    if (!is_wp_error($continentes) && !empty($continentes)) {
+        foreach ($continentes as $continente) {
+            // Regla para tours: /america/peru/tour-name/
+            add_rewrite_rule(
+                '^' . $continente->slug . '/([^/]+)/([^/]+)/?$',
+                'index.php?paquete=$matches[2]',
+                'top'
+            );
+        }
+    }
+}
+add_action('init', 'flavor_tour_rewrite_rules', 12);
+
+// Modificar los permalinks de tours para usar /continente/pais/tour-name/
+function flavor_tour_permalink($post_link, $post) {
+    if ($post->post_type !== 'paquete') {
+        return $post_link;
+    }
+
+    $terms = get_the_terms($post->ID, 'continente');
+    if ($terms && !is_wp_error($terms)) {
+        // Buscar el término más específico (país, no continente)
+        $pais = null;
+        $continente_principal = null;
+
+        foreach ($terms as $term) {
+            if ($term->parent > 0) {
+                $pais = $term;
+                $continente_principal = get_term($term->parent, 'continente');
+                break;
+            }
+        }
+
+        // Si solo tiene continente (sin país), usar el continente
+        if (!$pais) {
+            foreach ($terms as $term) {
+                if ($term->parent == 0) {
+                    $continente_principal = $term;
+                    break;
+                }
+            }
+        }
+
+        if ($continente_principal && $pais) {
+            return home_url('/' . $continente_principal->slug . '/' . $pais->slug . '/' . $post->post_name . '/');
+        } elseif ($continente_principal) {
+            // Tour asignado solo a continente (sin país específico)
+            return home_url('/' . $continente_principal->slug . '/' . $post->post_name . '/');
+        }
+    }
+
+    // Fallback: usar post_name directamente
+    return home_url('/' . $post->post_name . '/');
+}
+add_filter('post_type_link', 'flavor_tour_permalink', 10, 2);
+
+// Query vars para resolver URLs ambiguas
+function flavor_add_query_vars($vars) {
+    $vars[] = 'flavor_parent_continente';
+    $vars[] = 'flavor_slug';
+    return $vars;
+}
+add_filter('query_vars', 'flavor_add_query_vars');
+
+// Resolver la ambigüedad entre /america/peru/ (país) y /america/tour-name/ (tour sin país)
+function flavor_resolve_tour_or_term($query) {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    $parent_continente = get_query_var('flavor_parent_continente');
+    $slug = get_query_var('flavor_slug');
+
+    if ($parent_continente && $slug) {
+        // Primero verificar si es un término de continente (país)
+        $term = get_term_by('slug', $slug, 'continente');
+
+        if ($term) {
+            // Es un término de continente (país), configurar como taxonomy query
+            $query->set('continente', $slug);
+            $query->set('taxonomy', 'continente');
+            $query->set('term', $slug);
+            $query->is_tax = true;
+            $query->is_archive = true;
+            $query->is_home = false;
+            $query->is_front_page = false;
+
+            // Configurar tax_query para obtener posts
+            $query->set('tax_query', array(
+                array(
+                    'taxonomy' => 'continente',
+                    'field' => 'slug',
+                    'terms' => $slug,
+                    'include_children' => true,
+                ),
+            ));
+        } else {
+            // No es un término, buscar como tour
+            $tour = get_page_by_path($slug, OBJECT, 'paquete');
+            if ($tour) {
+                $query->set('post_type', 'paquete');
+                $query->set('name', $slug);
+                $query->set('p', $tour->ID);
+                $query->is_single = true;
+                $query->is_singular = true;
+                $query->is_tax = false;
+                $query->is_archive = false;
+                $query->is_home = false;
+                $query->is_front_page = false;
+            } else {
+                // No encontrado, dejar que WordPress maneje el 404
+                $query->set_404();
+            }
+        }
+    }
+}
+add_action('pre_get_posts', 'flavor_resolve_tour_or_term', 1);
+
+// Forzar la plantilla correcta para subcategorías de continente
+function flavor_force_taxonomy_template($template) {
+    $parent_continente = get_query_var('flavor_parent_continente');
+    $slug = get_query_var('flavor_slug');
+
+    if ($parent_continente && $slug) {
+        $term = get_term_by('slug', $slug, 'continente');
+
+        if ($term) {
+            // Forzar la plantilla de taxonomy-continente.php
+            $taxonomy_template = locate_template('taxonomy-continente.php');
+            if ($taxonomy_template) {
+                // Configurar variables globales para que el template funcione
+                global $wp_query;
+                $wp_query->queried_object = $term;
+                $wp_query->queried_object_id = $term->term_id;
+
+                return $taxonomy_template;
+            }
+        } else {
+            // Verificar si es un tour
+            $tour = get_page_by_path($slug, OBJECT, 'paquete');
+            if ($tour) {
+                $single_template = locate_template('single.php');
+                if ($single_template) {
+                    return $single_template;
+                }
+            }
+        }
+    }
+
+    return $template;
+}
+add_filter('template_include', 'flavor_force_taxonomy_template', 99);
+
+// Prevenir redirect canónico para URLs de subcategorías
+function flavor_prevent_canonical_redirect($redirect_url, $requested_url) {
+    $parent_continente = get_query_var('flavor_parent_continente');
+    $slug = get_query_var('flavor_slug');
+
+    if ($parent_continente && $slug) {
+        // Verificar si es un término válido
+        $term = get_term_by('slug', $slug, 'continente');
+        if ($term) {
+            return false; // No redirect
+        }
+    }
+
+    return $redirect_url;
+}
+add_filter('redirect_canonical', 'flavor_prevent_canonical_redirect', 10, 2);
+
 // ========== CAMPOS PARA CONTINENTES CON MEDIA LIBRARY ==========
 function flavor_admin_scripts($hook) {
-    if ($hook == 'term.php' || $hook == 'edit-tags.php') {
+    if ($hook == 'term.php' || $hook == 'edit-tags.php' || $hook == 'post.php' || $hook == 'post-new.php') {
         wp_enqueue_media();
     }
 }
@@ -256,7 +565,50 @@ function flavor_customizer($wp_customize) {
     // Search bar (solo destinos)
     $wp_customize->add_setting('flavor_destinos_show_search', array('default' => false, 'sanitize_callback' => 'wp_validate_boolean'));
     $wp_customize->add_control('flavor_destinos_show_search', array('label' => 'Mostrar barra de búsqueda', 'section' => 'flavor_destinos_page', 'type' => 'checkbox'));
-    
+
+    // ========== PÁGINA VIAJES ==========
+    $wp_customize->add_section('flavor_viajes_page', array('title' => '✈️ Página Viajes', 'priority' => 40));
+
+    // Hero
+    $wp_customize->add_setting('flavor_viajes_title', array('default' => 'Nuestros Viajes', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_viajes_title', array('label' => 'Título', 'section' => 'flavor_viajes_page'));
+    $wp_customize->add_setting('flavor_viajes_desc', array('default' => 'Descubre nuestras salidas confirmadas y eventos deportivos. Experiencias únicas con fechas garantizadas.', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_viajes_desc', array('label' => 'Descripción', 'section' => 'flavor_viajes_page', 'type' => 'textarea'));
+    $wp_customize->add_setting('flavor_viajes_image', array('default' => '', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_viajes_image', array('label' => 'Imagen de fondo Hero (URL)', 'section' => 'flavor_viajes_page', 'type' => 'url'));
+
+    // Imágenes de las tarjetas
+    $wp_customize->add_setting('flavor_salidas_image', array('default' => 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_salidas_image', array('label' => 'Imagen tarjeta Salidas Confirmadas (URL)', 'section' => 'flavor_viajes_page', 'type' => 'url'));
+    $wp_customize->add_setting('flavor_eventos_image', array('default' => 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&q=80', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_eventos_image', array('label' => 'Imagen tarjeta Eventos Deportivos (URL)', 'section' => 'flavor_viajes_page', 'type' => 'url'));
+
+    // Texto introductorio (arriba de las tarjetas)
+    $wp_customize->add_setting('flavor_viajes_intro', array('default' => '', 'sanitize_callback' => 'wp_kses_post'));
+    $wp_customize->add_control('flavor_viajes_intro', array('label' => 'Texto introductorio (acepta HTML)', 'section' => 'flavor_viajes_page', 'description' => 'Se muestra ARRIBA de las tarjetas. Acepta enlaces, negritas, etc.', 'type' => 'textarea'));
+
+    // Bloque de contenido adicional (abajo de las tarjetas)
+    $wp_customize->add_setting('flavor_viajes_content', array('default' => '', 'sanitize_callback' => 'wp_kses_post'));
+    $wp_customize->add_control('flavor_viajes_content', array('label' => 'Texto adicional (acepta HTML)', 'section' => 'flavor_viajes_page', 'description' => 'Se muestra debajo de las tarjetas. Acepta enlaces, negritas, etc.', 'type' => 'textarea'));
+
+    $wp_customize->add_setting('flavor_viajes_content_image', array('default' => '', 'sanitize_callback' => 'absint'));
+    $wp_customize->add_control(new WP_Customize_Media_Control($wp_customize, 'flavor_viajes_content_image', array(
+        'label' => 'Imagen del bloque de texto',
+        'section' => 'flavor_viajes_page',
+        'mime_type' => 'image',
+    )));
+    $wp_customize->add_setting('flavor_viajes_layout', array('default' => 'text-only', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_viajes_layout', array(
+        'label' => 'Diseño del bloque',
+        'section' => 'flavor_viajes_page',
+        'type' => 'select',
+        'choices' => array(
+            'text-only' => 'Solo texto',
+            'image-left' => 'Imagen a la izquierda',
+            'image-right' => 'Imagen a la derecha',
+        ),
+    ));
+
     // ========== PÁGINA TOURS ==========
     $wp_customize->add_section('flavor_tours_page', array('title' => '🌴 Página Tours', 'priority' => 41));
     
@@ -415,7 +767,59 @@ function flavor_customizer($wp_customize) {
             'image-right' => 'Imagen a la derecha',
         ),
     ));
-    
+
+    // ========== PÁGINA SALIDAS CONFIRMADAS ==========
+    $wp_customize->add_section('flavor_salidas_page', array('title' => '📅 Página Salidas Confirmadas', 'priority' => 42));
+
+    $wp_customize->add_setting('flavor_salidas_title', array('default' => 'Salidas Confirmadas', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_salidas_title', array('label' => 'Título', 'section' => 'flavor_salidas_page'));
+    $wp_customize->add_setting('flavor_salidas_desc', array('default' => 'Viajes con fechas y grupos confirmados. Reserva tu lugar ahora.', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_salidas_desc', array('label' => 'Descripción', 'section' => 'flavor_salidas_page', 'type' => 'textarea'));
+    $wp_customize->add_setting('flavor_salidas_image', array('default' => '', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_salidas_image', array('label' => 'Imagen de fondo (URL)', 'section' => 'flavor_salidas_page', 'type' => 'url'));
+
+    $wp_customize->add_setting('flavor_salidas_position', array('default' => 'center', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_salidas_position', array('label' => 'Posición del contenido', 'section' => 'flavor_salidas_page', 'type' => 'select', 'choices' => array('top' => 'Arriba', 'center' => 'Centro', 'bottom' => 'Abajo')));
+
+    $wp_customize->add_setting('flavor_salidas_show_badge', array('default' => true, 'sanitize_callback' => 'wp_validate_boolean'));
+    $wp_customize->add_control('flavor_salidas_show_badge', array('label' => 'Mostrar badge contador', 'section' => 'flavor_salidas_page', 'type' => 'checkbox'));
+
+    $wp_customize->add_setting('flavor_salidas_show_cta', array('default' => true, 'sanitize_callback' => 'wp_validate_boolean'));
+    $wp_customize->add_control('flavor_salidas_show_cta', array('label' => 'Mostrar botón CTA', 'section' => 'flavor_salidas_page', 'type' => 'checkbox'));
+    $wp_customize->add_setting('flavor_salidas_cta_text', array('default' => 'Consultar por WhatsApp', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_salidas_cta_text', array('label' => 'Texto del botón', 'section' => 'flavor_salidas_page'));
+    $wp_customize->add_setting('flavor_salidas_cta_url', array('default' => '', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_salidas_cta_url', array('label' => 'URL del botón (vacío = WhatsApp)', 'section' => 'flavor_salidas_page', 'type' => 'url'));
+
+    $wp_customize->add_setting('flavor_salidas_show_scroll', array('default' => true, 'sanitize_callback' => 'wp_validate_boolean'));
+    $wp_customize->add_control('flavor_salidas_show_scroll', array('label' => 'Mostrar indicador de scroll', 'section' => 'flavor_salidas_page', 'type' => 'checkbox'));
+
+    // ========== PÁGINA EVENTOS DEPORTIVOS ==========
+    $wp_customize->add_section('flavor_eventos_page', array('title' => '🏆 Página Eventos Deportivos', 'priority' => 43));
+
+    $wp_customize->add_setting('flavor_eventos_title', array('default' => 'Eventos Deportivos', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_eventos_title', array('label' => 'Título', 'section' => 'flavor_eventos_page'));
+    $wp_customize->add_setting('flavor_eventos_desc', array('default' => 'Vive la emoción de los mejores eventos deportivos del mundo.', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_eventos_desc', array('label' => 'Descripción', 'section' => 'flavor_eventos_page', 'type' => 'textarea'));
+    $wp_customize->add_setting('flavor_eventos_image', array('default' => '', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_eventos_image', array('label' => 'Imagen de fondo (URL)', 'section' => 'flavor_eventos_page', 'type' => 'url'));
+
+    $wp_customize->add_setting('flavor_eventos_position', array('default' => 'center', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_eventos_position', array('label' => 'Posición del contenido', 'section' => 'flavor_eventos_page', 'type' => 'select', 'choices' => array('top' => 'Arriba', 'center' => 'Centro', 'bottom' => 'Abajo')));
+
+    $wp_customize->add_setting('flavor_eventos_show_badge', array('default' => true, 'sanitize_callback' => 'wp_validate_boolean'));
+    $wp_customize->add_control('flavor_eventos_show_badge', array('label' => 'Mostrar badge contador', 'section' => 'flavor_eventos_page', 'type' => 'checkbox'));
+
+    $wp_customize->add_setting('flavor_eventos_show_cta', array('default' => true, 'sanitize_callback' => 'wp_validate_boolean'));
+    $wp_customize->add_control('flavor_eventos_show_cta', array('label' => 'Mostrar botón CTA', 'section' => 'flavor_eventos_page', 'type' => 'checkbox'));
+    $wp_customize->add_setting('flavor_eventos_cta_text', array('default' => 'Consultar por WhatsApp', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_control('flavor_eventos_cta_text', array('label' => 'Texto del botón', 'section' => 'flavor_eventos_page'));
+    $wp_customize->add_setting('flavor_eventos_cta_url', array('default' => '', 'sanitize_callback' => 'esc_url_raw'));
+    $wp_customize->add_control('flavor_eventos_cta_url', array('label' => 'URL del botón (vacío = WhatsApp)', 'section' => 'flavor_eventos_page', 'type' => 'url'));
+
+    $wp_customize->add_setting('flavor_eventos_show_scroll', array('default' => true, 'sanitize_callback' => 'wp_validate_boolean'));
+    $wp_customize->add_control('flavor_eventos_show_scroll', array('label' => 'Mostrar indicador de scroll', 'section' => 'flavor_eventos_page', 'type' => 'checkbox'));
+
     // PÁGINA CONTACTO
     $wp_customize->add_section('flavor_contacto_page', array('title' => '📧 Página Contacto', 'priority' => 44));
     $wp_customize->add_setting('flavor_contacto_title', array('default' => 'Contacto', 'sanitize_callback' => 'sanitize_text_field'));
@@ -424,10 +828,8 @@ function flavor_customizer($wp_customize) {
     $wp_customize->add_control('flavor_contacto_desc', array('label' => 'Descripción', 'section' => 'flavor_contacto_page', 'type' => 'textarea'));
     $wp_customize->add_setting('flavor_contacto_image', array('default' => 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1920&q=80', 'sanitize_callback' => 'esc_url_raw'));
     $wp_customize->add_control('flavor_contacto_image', array('label' => 'Imagen de fondo (URL)', 'section' => 'flavor_contacto_page', 'type' => 'url'));
-    $wp_customize->add_setting('flavor_contacto_address', array('default' => 'Av. Principal 123, Lima, Perú', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_setting('flavor_contacto_address', array('default' => 'CAL.LOS CRISANTEMOS NRO. 547 URB. JARDINES VIRU - CALLAO - BELLAVISTA', 'sanitize_callback' => 'sanitize_text_field'));
     $wp_customize->add_control('flavor_contacto_address', array('label' => 'Dirección', 'section' => 'flavor_contacto_page'));
-    $wp_customize->add_setting('flavor_contacto_hours', array('default' => 'Lunes a Viernes: 9am - 6pm', 'sanitize_callback' => 'sanitize_text_field'));
-    $wp_customize->add_control('flavor_contacto_hours', array('label' => 'Horario', 'section' => 'flavor_contacto_page'));
     
     // Teléfono de la página contacto
     $wp_customize->add_setting('flavor_contacto_phone', array('default' => '', 'sanitize_callback' => 'sanitize_text_field'));
@@ -543,7 +945,7 @@ function flavor_customizer($wp_customize) {
     // ========== HOME - CTA ==========
     $wp_customize->add_section('flavor_cta', array('title' => '📢 Home - CTA Final', 'priority' => 55));
     
-    $wp_customize->add_setting('flavor_cta_title', array('default' => '¿Listo para tu próxima aventura?', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_setting('flavor_cta_title', array('default' => 'Llevamos la satisfacción de tus pasajeros al siguiente nivel', 'sanitize_callback' => 'sanitize_text_field'));
     $wp_customize->add_control('flavor_cta_title', array('label' => 'Título', 'section' => 'flavor_cta'));
     
     $wp_customize->add_setting('flavor_cta_subtitle', array('default' => 'Contáctanos y diseñaremos el viaje perfecto para ti.', 'sanitize_callback' => 'sanitize_text_field'));
@@ -569,8 +971,9 @@ add_action('customize_register', 'flavor_customizer');
 
 // ========== META BOXES CON FECHAS DE VIGENCIA ==========
 function flavor_meta_boxes() {
-    add_meta_box('flavor_precio', '💰 Precios y Detalles', 'flavor_precio_cb', array('paquete', 'oferta', 'destino'), 'side', 'high');
-    add_meta_box('flavor_vigencia', '📅 Vigencia (Visibilidad)', 'flavor_vigencia_cb', array('paquete', 'oferta', 'destino'), 'side', 'high');
+    $all_cpts = array('paquete', 'oferta', 'destino', 'salida_confirmada', 'evento_deportivo');
+    add_meta_box('flavor_precio', '💰 Precios y Detalles', 'flavor_precio_cb', $all_cpts, 'side', 'high');
+    add_meta_box('flavor_vigencia', '📅 Vigencia (Visibilidad)', 'flavor_vigencia_cb', $all_cpts, 'side', 'high');
 }
 add_action('add_meta_boxes', 'flavor_meta_boxes');
 
@@ -591,8 +994,28 @@ function flavor_precio_cb($post) {
     </p>
     <p>
         <label><strong>Duración</strong></label><br>
-        <input type="text" name="flavor_duracion" value="<?php echo esc_attr($d); ?>" style="width:100%" placeholder="5 días / 4 noches">
+        <input type="text" name="flavor_duracion" id="flavor_duracion" value="<?php echo esc_attr($d); ?>" style="width:100%" placeholder="5 días / 4 noches">
+        <br><small>Escribe solo el número de días (ej: 5) y se autocompletará</small>
     </p>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var duracionInput = document.getElementById('flavor_duracion');
+        if (!duracionInput) return;
+
+        duracionInput.addEventListener('blur', function() {
+            var value = this.value.trim();
+            // Si es solo un número, autocompletar
+            if (/^\d+$/.test(value)) {
+                var dias = parseInt(value);
+                var noches = dias - 1;
+                if (noches < 0) noches = 0;
+                var diaText = dias === 1 ? 'día' : 'días';
+                var nocheText = noches === 1 ? 'noche' : 'noches';
+                this.value = dias + ' ' + diaText + ' / ' + noches + ' ' + nocheText;
+            }
+        });
+    });
+    </script>
     <?php
 }
 
@@ -641,6 +1064,123 @@ function flavor_save_meta($post_id) {
 }
 add_action('save_post', 'flavor_save_meta');
 
+// ========== META BOX PARA ARCHIVOS DESCARGABLES ==========
+function flavor_archivos_meta_box() {
+    $post_types = array('paquete', 'oferta', 'salida_confirmada', 'evento_deportivo');
+    add_meta_box(
+        'flavor_archivos',
+        '📎 Archivos Descargables',
+        'flavor_archivos_cb',
+        $post_types,
+        'side',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'flavor_archivos_meta_box');
+
+function flavor_archivos_cb($post) {
+    wp_nonce_field('flavor_archivos_save', 'flavor_archivos_nonce');
+
+    $archivo_id = get_post_meta($post->ID, '_flavor_archivo_id', true);
+    $flyer_id = get_post_meta($post->ID, '_flavor_flyer_id', true);
+
+    $archivo_url = $archivo_id ? wp_get_attachment_url($archivo_id) : '';
+    $flyer_url = $flyer_id ? wp_get_attachment_image_url($flyer_id, 'thumbnail') : '';
+    ?>
+
+    <p>
+        <label><strong>📄 Archivo (PDF/Word)</strong></label><br>
+        <input type="hidden" name="flavor_archivo_id" id="flavor_archivo_id" value="<?php echo esc_attr($archivo_id); ?>">
+        <button type="button" class="button" id="flavor_archivo_btn">Seleccionar Archivo</button>
+        <button type="button" class="button" id="flavor_archivo_remove" style="<?php echo $archivo_id ? '' : 'display:none;'; ?>">Eliminar</button>
+        <div id="flavor_archivo_preview" style="margin-top: 10px;">
+            <?php if ($archivo_url): ?>
+                <a href="<?php echo esc_url($archivo_url); ?>" target="_blank"><?php echo esc_html(basename($archivo_url)); ?></a>
+            <?php endif; ?>
+        </div>
+    </p>
+
+    <hr style="margin: 15px 0;">
+
+    <p>
+        <label><strong>🖼️ Flyer (Imagen)</strong></label><br>
+        <input type="hidden" name="flavor_flyer_id" id="flavor_flyer_id" value="<?php echo esc_attr($flyer_id); ?>">
+        <button type="button" class="button" id="flavor_flyer_btn">Seleccionar Flyer</button>
+        <button type="button" class="button" id="flavor_flyer_remove" style="<?php echo $flyer_id ? '' : 'display:none;'; ?>">Eliminar</button>
+        <div id="flavor_flyer_preview" style="margin-top: 10px;">
+            <?php if ($flyer_url): ?>
+                <img src="<?php echo esc_url($flyer_url); ?>" style="max-width: 150px; border-radius: 4px;">
+            <?php endif; ?>
+        </div>
+    </p>
+
+    <script>
+    jQuery(document).ready(function($) {
+        $('#flavor_archivo_btn').on('click', function(e) {
+            e.preventDefault();
+            var frame = wp.media({
+                title: 'Seleccionar Archivo',
+                button: { text: 'Usar este archivo' },
+                library: { type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] },
+                multiple: false
+            });
+            frame.on('select', function() {
+                var attachment = frame.state().get('selection').first().toJSON();
+                $('#flavor_archivo_id').val(attachment.id);
+                $('#flavor_archivo_preview').html('<a href="' + attachment.url + '" target="_blank">' + attachment.filename + '</a>');
+                $('#flavor_archivo_remove').show();
+            });
+            frame.open();
+        });
+
+        $('#flavor_archivo_remove').on('click', function() {
+            $('#flavor_archivo_id').val('');
+            $('#flavor_archivo_preview').html('');
+            $(this).hide();
+        });
+
+        $('#flavor_flyer_btn').on('click', function(e) {
+            e.preventDefault();
+            var frame = wp.media({
+                title: 'Seleccionar Flyer',
+                button: { text: 'Usar esta imagen' },
+                library: { type: 'image' },
+                multiple: false
+            });
+            frame.on('select', function() {
+                var attachment = frame.state().get('selection').first().toJSON();
+                $('#flavor_flyer_id').val(attachment.id);
+                var imgUrl = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
+                $('#flavor_flyer_preview').html('<img src="' + imgUrl + '" style="max-width: 150px; border-radius: 4px;">');
+                $('#flavor_flyer_remove').show();
+            });
+            frame.open();
+        });
+
+        $('#flavor_flyer_remove').on('click', function() {
+            $('#flavor_flyer_id').val('');
+            $('#flavor_flyer_preview').html('');
+            $(this).hide();
+        });
+    });
+    </script>
+    <?php
+}
+
+function flavor_save_archivos_meta($post_id) {
+    if (!isset($_POST['flavor_archivos_nonce']) || !wp_verify_nonce($_POST['flavor_archivos_nonce'], 'flavor_archivos_save')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    if (isset($_POST['flavor_archivo_id'])) {
+        update_post_meta($post_id, '_flavor_archivo_id', absint($_POST['flavor_archivo_id']));
+    }
+    if (isset($_POST['flavor_flyer_id'])) {
+        update_post_meta($post_id, '_flavor_flyer_id', absint($_POST['flavor_flyer_id']));
+    }
+}
+add_action('save_post', 'flavor_save_archivos_meta');
+
 // ========== FILTRAR CONTENIDO POR VIGENCIA ==========
 function flavor_filter_by_vigencia($query) {
     // Solo en frontend, no en admin
@@ -649,8 +1189,8 @@ function flavor_filter_by_vigencia($query) {
     // Solo para nuestros CPT
     if (!$query->is_main_query()) return;
     
-    $post_types = array('destino', 'paquete', 'oferta');
-    
+    $post_types = array('destino', 'paquete', 'oferta', 'salida_confirmada', 'evento_deportivo');
+
     // Verificar si es archive o taxonomy de nuestros CPT
     $is_our_archive = false;
     if ($query->is_post_type_archive($post_types)) $is_our_archive = true;
@@ -734,6 +1274,8 @@ function flavor_admin_columns($columns) {
 add_filter('manage_destino_posts_columns', 'flavor_admin_columns');
 add_filter('manage_paquete_posts_columns', 'flavor_admin_columns');
 add_filter('manage_oferta_posts_columns', 'flavor_admin_columns');
+add_filter('manage_salida_confirmada_posts_columns', 'flavor_admin_columns');
+add_filter('manage_evento_deportivo_posts_columns', 'flavor_admin_columns');
 
 function flavor_admin_column_content($column, $post_id) {
     if ($column !== 'vigencia') return;
@@ -766,6 +1308,8 @@ function flavor_admin_column_content($column, $post_id) {
 add_action('manage_destino_posts_custom_column', 'flavor_admin_column_content', 10, 2);
 add_action('manage_paquete_posts_custom_column', 'flavor_admin_column_content', 10, 2);
 add_action('manage_oferta_posts_custom_column', 'flavor_admin_column_content', 10, 2);
+add_action('manage_salida_confirmada_posts_custom_column', 'flavor_admin_column_content', 10, 2);
+add_action('manage_evento_deportivo_posts_custom_column', 'flavor_admin_column_content', 10, 2);
 
 // FLUSH REWRITE
 function flavor_activate() {
@@ -773,6 +1317,24 @@ function flavor_activate() {
     flush_rewrite_rules();
 }
 add_action('after_switch_theme', 'flavor_activate');
+
+// Flush rewrite rules cuando se guarda un tour con continente
+function flavor_flush_on_tour_save($post_id, $post, $update) {
+    if ($post->post_type === 'paquete') {
+        // Marcar para flush en el próximo init
+        set_transient('flavor_flush_rewrite', 1, 60);
+    }
+}
+add_action('save_post', 'flavor_flush_on_tour_save', 10, 3);
+
+// Ejecutar flush si está marcado
+function flavor_maybe_flush_rewrite() {
+    if (get_transient('flavor_flush_rewrite')) {
+        delete_transient('flavor_flush_rewrite');
+        flush_rewrite_rules();
+    }
+}
+add_action('init', 'flavor_maybe_flush_rewrite', 99);
 
 // ========== CUSTOMIZER - HOMEPAGE ==========
 // REMOVED: flavor_customizer_home (duplicated)
@@ -931,54 +1493,6 @@ function flavor_disable_resource_cache($src) {
 add_filter('style_loader_src', 'flavor_disable_resource_cache', 10, 1);
 add_filter('script_loader_src', 'flavor_disable_resource_cache', 10, 1);
 
-// ========== PURGE CACHE BUTTON ==========
-function flavor_add_purge_button($wp_admin_bar) {
-    if (!current_user_can('manage_options')) return;
-    
-    $wp_admin_bar->add_node(array(
-        'id' => 'flavor-purge-cache',
-        'title' => '🔄 Purgar Caché',
-        'href' => admin_url('?flavor_purge_cache=1'),
-        'meta' => array('class' => 'flavor-purge-btn')
-    ));
-}
-add_action('admin_bar_menu', 'flavor_add_purge_button', 100);
-
-function flavor_handle_purge_cache() {
-    if (isset($_GET['flavor_purge_cache']) && current_user_can('manage_options')) {
-        // Clear any object cache
-        if (function_exists('wp_cache_flush')) {
-            wp_cache_flush();
-        }
-        
-        // LiteSpeed Cache
-        if (class_exists('LiteSpeed_Cache_API')) {
-            LiteSpeed_Cache_API::purge_all();
-        }
-        
-        // WP Super Cache
-        if (function_exists('wp_cache_clear_cache')) {
-            wp_cache_clear_cache();
-        }
-        
-        // W3 Total Cache
-        if (function_exists('w3tc_flush_all')) {
-            w3tc_flush_all();
-        }
-        
-        // Update theme version to bust browser cache
-        update_option('flavor_cache_version', time());
-        
-        wp_redirect(remove_query_arg('flavor_purge_cache'));
-        exit;
-    }
-}
-add_action('init', 'flavor_handle_purge_cache');
-
-// Add cache version to all assets
-function flavor_cache_version() {
-    return get_option('flavor_cache_version', time());
-}
 
 
 // Agregar página de opciones del tema
@@ -1025,16 +1539,6 @@ function flavor_options_page_html() {
             <p>
                 <a href="<?php echo admin_url('edit-tags.php?taxonomy=continente&post_type=destino'); ?>" class="button">
                     🌍 Gestionar Continentes
-                </a>
-            </p>
-        </div>
-        
-        <div style="background: white; padding: 30px; border-radius: 8px; margin-top: 20px; max-width: 600px;">
-            <h2 style="margin-top: 0;">🔄 Caché</h2>
-            <p>Si los cambios no se reflejan en el sitio:</p>
-            <p>
-                <a href="<?php echo admin_url('?flavor_purge_cache=1'); ?>" class="button button-secondary">
-                    🔄 Purgar caché
                 </a>
             </p>
         </div>
@@ -1440,7 +1944,7 @@ function flavor_get_items_con_descuento($limit = 8) {
         LEFT JOIN {$wpdb->postmeta} pm_siempre ON p.ID = pm_siempre.post_id AND pm_siempre.meta_key = '_flavor_siempre_visible'
         LEFT JOIN {$wpdb->postmeta} pm_inicio ON p.ID = pm_inicio.post_id AND pm_inicio.meta_key = '_flavor_fecha_inicio'
         LEFT JOIN {$wpdb->postmeta} pm_fin ON p.ID = pm_fin.post_id AND pm_fin.meta_key = '_flavor_fecha_fin'
-        WHERE p.post_type IN ('destino', 'paquete', 'oferta')
+        WHERE p.post_type IN ('paquete', 'oferta', 'salida_confirmada', 'evento_deportivo')
         AND p.post_status = 'publish'
         AND pm_oferta.meta_value != ''
         AND pm_oferta.meta_value > 0
@@ -1486,19 +1990,50 @@ function flavor_get_discount_percent($post_id) {
 // ========== BUSCADOR AJAX ==========
 function flavor_ajax_search() {
     $query = sanitize_text_field($_GET['q']);
-    
+    $continente_slug = isset($_GET['continente']) ? sanitize_text_field($_GET['continente']) : '';
+
     if (strlen($query) < 2) {
         wp_send_json(array());
         return;
     }
-    
+
     $args = array(
-        'post_type' => array('destino', 'paquete', 'oferta'),
+        'post_type' => array('destino', 'paquete', 'oferta', 'salida_confirmada', 'evento_deportivo'),
         'posts_per_page' => 8,
         's' => $query,
         'post_status' => 'publish',
     );
-    
+
+    // Filtrar por continente si se especifica
+    if (!empty($continente_slug)) {
+        $args['post_type'] = array('paquete', 'oferta', 'salida_confirmada', 'evento_deportivo');
+
+        // Obtener el término y sus hijos (países)
+        $continente_term = get_term_by('slug', $continente_slug, 'continente');
+        if ($continente_term) {
+            $term_ids = array($continente_term->term_id);
+
+            // Incluir subcategorías (países)
+            $children = get_terms(array(
+                'taxonomy' => 'continente',
+                'parent' => $continente_term->term_id,
+                'hide_empty' => false,
+                'fields' => 'ids',
+            ));
+            if (!is_wp_error($children)) {
+                $term_ids = array_merge($term_ids, $children);
+            }
+
+            $args['tax_query'] = array(
+                array(
+                    'taxonomy' => 'continente',
+                    'field' => 'term_id',
+                    'terms' => $term_ids,
+                ),
+            );
+        }
+    }
+
     $posts = get_posts($args);
     $results = array();
     
@@ -1522,7 +2057,9 @@ function flavor_ajax_search() {
         $type_labels = array(
             'destino' => 'Destino',
             'paquete' => 'Tour',
-            'oferta' => 'Oferta'
+            'oferta' => 'Oferta',
+            'salida_confirmada' => 'Salida',
+            'evento_deportivo' => 'Evento',
         );
         
         $results[] = array(
@@ -1627,6 +2164,61 @@ function flavor_search_filter($query) {
     return $query;
 }
 add_action('pre_get_posts', 'flavor_search_filter');
+
+// ========== REDIRECT DE URLs LEGACY ==========
+// Redirigir URLs con query string ?destino=slug a su permalink limpio
+function flavor_redirect_legacy_urls() {
+    // Redirect ?destino=slug
+    if (isset($_GET['destino']) && !empty($_GET['destino'])) {
+        $slug = sanitize_title($_GET['destino']);
+        $post = get_page_by_path($slug, OBJECT, 'destino');
+        if ($post) {
+            wp_redirect(get_permalink($post->ID), 301);
+            exit;
+        }
+    }
+
+    // Redirect ?paquete=slug
+    if (isset($_GET['paquete']) && !empty($_GET['paquete'])) {
+        $slug = sanitize_title($_GET['paquete']);
+        $post = get_page_by_path($slug, OBJECT, 'paquete');
+        if ($post) {
+            wp_redirect(get_permalink($post->ID), 301);
+            exit;
+        }
+    }
+
+    // Redirect ?oferta=slug
+    if (isset($_GET['oferta']) && !empty($_GET['oferta'])) {
+        $slug = sanitize_title($_GET['oferta']);
+        $post = get_page_by_path($slug, OBJECT, 'oferta');
+        if ($post) {
+            wp_redirect(get_permalink($post->ID), 301);
+            exit;
+        }
+    }
+
+    // Redirect ?salida_confirmada=slug
+    if (isset($_GET['salida_confirmada']) && !empty($_GET['salida_confirmada'])) {
+        $slug = sanitize_title($_GET['salida_confirmada']);
+        $post = get_page_by_path($slug, OBJECT, 'salida_confirmada');
+        if ($post) {
+            wp_redirect(get_permalink($post->ID), 301);
+            exit;
+        }
+    }
+
+    // Redirect ?evento_deportivo=slug
+    if (isset($_GET['evento_deportivo']) && !empty($_GET['evento_deportivo'])) {
+        $slug = sanitize_title($_GET['evento_deportivo']);
+        $post = get_page_by_path($slug, OBJECT, 'evento_deportivo');
+        if ($post) {
+            wp_redirect(get_permalink($post->ID), 301);
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'flavor_redirect_legacy_urls', 1);
 
 // ========== SISTEMA DE SUSCRIPTORES ==========
 
