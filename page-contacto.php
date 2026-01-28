@@ -34,10 +34,6 @@ $map_embed = get_theme_mod('flavor_contacto_map', '');
 
 $content_image_url = $content_image ? wp_get_attachment_image_url($content_image, 'large') : '';
 
-// Ofuscar email para evitar spam
-$email_parts = explode('@', $email);
-$email_user = $email_parts[0];
-$email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
 ?>
 
 <style>
@@ -88,6 +84,15 @@ $email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
     height: 24px;
     stroke: #2563eb;
 }
+.contact-icon--whatsapp {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+}
+.contact-icon--whatsapp svg {
+    width: 26px;
+    height: 26px;
+    fill: #16a34a;
+    stroke: none;
+}
 .contact-info h3 {
     font-size: 0.85rem;
     color: #64748b;
@@ -135,14 +140,15 @@ $email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
     transform: translateY(-2px);
     box-shadow: 0 12px 35px rgba(37, 211, 102, 0.4);
 }
-.contact-btn--call {
-    background: white;
-    color: #0a1628;
-    border: 2px solid #e2e8f0;
+.contact-btn--email {
+    background: #0a1628;
+    color: white;
+    box-shadow: 0 8px 25px rgba(10, 22, 40, 0.2);
 }
-.contact-btn--call:hover {
-    border-color: #2563eb;
-    color: #2563eb;
+.contact-btn--email:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(10, 22, 40, 0.3);
+    background: #1e3a5f;
 }
 .map-container {
     border-radius: 20px;
@@ -232,14 +238,20 @@ $email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
                     </div>
                     <div class="contact-info">
                         <h3>Correo electrónico</h3>
-                        <p>
-                            <a href="#" class="email-link" data-user="<?php echo esc_attr($email_user); ?>" data-domain="<?php echo esc_attr($email_domain); ?>">
-                                <span class="email-text"><?php echo esc_html($email_user); ?> [arroba] <?php echo esc_html($email_domain); ?></span>
-                            </a>
-                        </p>
+                        <p><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></p>
                     </div>
                 </div>
                 
+                <div class="contact-item contact-item--whatsapp">
+                    <div class="contact-icon contact-icon--whatsapp">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    </div>
+                    <div class="contact-info">
+                        <h3>WhatsApp</h3>
+                        <p><a href="https://wa.me/<?php echo esc_attr($whatsapp); ?>?text=<?php echo urlencode('Hola, me gustaría más información.'); ?>" target="_blank">Escríbenos por WhatsApp</a></p>
+                    </div>
+                </div>
+
                 <?php if ($address): ?>
                 <div class="contact-item">
                     <div class="contact-icon">
@@ -255,7 +267,11 @@ $email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
                 <div class="contact-buttons">
                     <a href="https://wa.me/<?php echo esc_attr($whatsapp); ?>?text=<?php echo urlencode('Hola, me gustaría más información sobre sus servicios.'); ?>" target="_blank" class="contact-btn contact-btn--whatsapp">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
-                        WhatsApp
+                        Enviar mensaje
+                    </a>
+                    <a href="mailto:<?php echo esc_attr($email); ?>" class="contact-btn contact-btn--email">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        Enviar email
                     </a>
                 </div>
             </div>
@@ -306,23 +322,5 @@ $email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
     </div>
 </section>
 <?php endif; ?>
-
-<!-- Script para revelar email al hacer click -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const emailLinks = document.querySelectorAll('.email-link');
-    emailLinks.forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const user = this.dataset.user;
-            const domain = this.dataset.domain;
-            const email = user + '@' + domain;
-            this.href = 'mailto:' + email;
-            this.querySelector('.email-text').textContent = email;
-            window.location.href = 'mailto:' + email;
-        });
-    });
-});
-</script>
 
 <?php get_footer(); ?>
