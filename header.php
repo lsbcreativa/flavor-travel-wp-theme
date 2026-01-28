@@ -1,5 +1,10 @@
 <?php
-$continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false));
+// Solo obtener continentes padres (no países/subcategorías)
+$continentes = get_terms(array(
+    'taxonomy' => 'continente',
+    'hide_empty' => false,
+    'parent' => 0
+));
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -332,7 +337,7 @@ $continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false
     <div class="container">
         <a href="<?php echo home_url('/'); ?>" class="site-logo">
             <div class="site-logo__icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
             </div>
             <span class="site-logo__text"><?php echo get_bloginfo('name') ?: 'Tu Agencia'; ?></span>
         </a>
@@ -343,7 +348,7 @@ $continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false
             </div>
             
             <div class="nav-item">
-                <a href="<?php echo get_post_type_archive_link('destino'); ?>">
+                <a href="<?php echo home_url('/destinos/'); ?>">
                     Destinos
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </a>
@@ -357,13 +362,20 @@ $continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false
             </div>
             
             <div class="nav-item">
-                <a href="<?php echo get_post_type_archive_link('paquete'); ?>">Tours</a>
+                <a href="<?php echo home_url('/viajes/'); ?>">
+                    Viajes
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </a>
+                <div class="submenu">
+                    <a href="<?php echo get_post_type_archive_link('salida_confirmada'); ?>">Salidas Confirmadas</a>
+                    <a href="<?php echo get_post_type_archive_link('evento_deportivo'); ?>">Eventos Deportivos</a>
+                </div>
             </div>
-            
+
             <div class="nav-item">
                 <a href="<?php echo get_post_type_archive_link('oferta'); ?>">Ofertas</a>
             </div>
-            
+
             <div class="nav-item">
                 <a href="<?php echo home_url('/nosotros/'); ?>">Nosotros</a>
             </div>
@@ -374,10 +386,6 @@ $continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false
         </nav>
         
         <div class="header-actions">
-            <a href="tel:<?php echo get_theme_mod('flavor_phone', '+00 123 456 789'); ?>" class="header-phone">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <span><?php echo get_theme_mod('flavor_phone', '+00 123 456 789'); ?></span>
-            </a>
             <a href="https://wa.me/<?php echo get_theme_mod('flavor_whatsapp', '00123456789'); ?>" class="header-whatsapp" target="_blank">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
             </a>
@@ -407,26 +415,34 @@ $continentes = get_terms(array('taxonomy' => 'continente', 'hide_empty' => false
                 Destinos
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </a>
-            <?php if ($continentes && !is_wp_error($continentes) && count($continentes) > 0): ?>
             <div class="mobile-submenu">
+                <a href="<?php echo home_url('/destinos/'); ?>" style="font-weight: 600; color: #2563eb;">Ver todos los destinos</a>
+                <?php if ($continentes && !is_wp_error($continentes) && count($continentes) > 0): ?>
                 <?php foreach ($continentes as $cont): ?>
                 <a href="<?php echo get_term_link($cont); ?>"><?php echo esc_html($cont->name); ?></a>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
         </div>
         
-        <a href="<?php echo get_post_type_archive_link('paquete'); ?>">Tours</a>
+        <div class="mobile-nav-item" id="mobile-viajes">
+            <a href="javascript:void(0);" onclick="toggleMobileSubmenu('mobile-viajes')">
+                Viajes
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </a>
+            <div class="mobile-submenu">
+                <a href="<?php echo home_url('/viajes/'); ?>" style="font-weight: 600; color: #2563eb;">Ver todos los viajes</a>
+                <a href="<?php echo get_post_type_archive_link('salida_confirmada'); ?>">Salidas Confirmadas</a>
+                <a href="<?php echo get_post_type_archive_link('evento_deportivo'); ?>">Eventos Deportivos</a>
+            </div>
+        </div>
+
         <a href="<?php echo get_post_type_archive_link('oferta'); ?>">Ofertas</a>
         <a href="<?php echo home_url('/nosotros/'); ?>">Nosotros</a>
         <a href="<?php echo home_url('/contacto/'); ?>">Contacto</a>
     </nav>
     <div class="mobile-menu-contact">
-        <a href="tel:<?php echo get_theme_mod('flavor_phone', '+00 123 456 789'); ?>">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            <?php echo get_theme_mod('flavor_phone', '+00 123 456 789'); ?>
-        </a>
-        <a href="https://wa.me/<?php echo get_theme_mod('flavor_whatsapp', '00123456789'); ?>" target="_blank" style="background: #25D366; color: white; padding: 14px 24px; border-radius: 8px; justify-content: center; margin-top: 16px;">
+        <a href="https://wa.me/<?php echo get_theme_mod('flavor_whatsapp', '00123456789'); ?>" target="_blank" style="background: #25D366; color: white; padding: 14px 24px; border-radius: 8px; justify-content: center;">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
             WhatsApp
         </a>

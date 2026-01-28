@@ -642,8 +642,7 @@ while (have_posts()): the_post();
             </div>
             <?php endif; ?>
 
-            <p class="sidebar-help">¿Prefieres llamar? <a href="tel:<?php echo get_theme_mod('flavor_phone', '+00123456789'); ?>"><?php echo get_theme_mod('flavor_phone', '+00 123 456 789'); ?></a></p>
-        </div>
+                    </div>
     </aside>
 </div>
 

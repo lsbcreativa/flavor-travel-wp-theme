@@ -67,11 +67,11 @@
             <div class="footer-col">
                 <div class="footer-logo">
                     <div style="width: 40px; height: 40px; background: #2563eb; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
                     </div>
                     <span style="font-family: 'DM Serif Display', serif; font-size: 1.2rem;"><?php echo get_bloginfo('name') ?: 'Tu Agencia'; ?></span>
                 </div>
-                <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6;">Tu agencia de viajes de confianza para explorar el mundo.</p>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6;">Tu mayorista de confianza.</p>
                 
                 <?php if (!empty($social_links)): ?>
                 <div class="footer-social">
@@ -86,8 +86,8 @@
             
             <div class="footer-col">
                 <h4 style="font-size: 1rem; margin-bottom: 16px; font-weight: 600;">Destinos</h4>
-                <a href="<?php echo get_post_type_archive_link('destino'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">Ver todos</a>
-                <a href="<?php echo get_post_type_archive_link('paquete'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">Tours</a>
+                <a href="<?php echo home_url('/destinos/'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">Ver todos</a>
+                <a href="<?php echo home_url('/viajes/'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">Viajes</a>
                 <a href="<?php echo get_post_type_archive_link('oferta'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">Ofertas</a>
             </div>
             
@@ -99,17 +99,17 @@
             
             <div class="footer-col">
                 <h4 style="font-size: 1rem; margin-bottom: 16px; font-weight: 600;">Contacto</h4>
-                <a href="tel:<?php echo get_theme_mod('flavor_phone', '+00123456789'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">
-                    <?php echo get_theme_mod('flavor_phone', '+00 123 456 789'); ?>
-                </a>
                 <a href="mailto:<?php echo get_theme_mod('flavor_email', 'info@tuagencia.com'); ?>" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">
                     <?php echo get_theme_mod('flavor_email', 'info@tuagencia.com'); ?>
+                </a>
+                <a href="https://wa.me/<?php echo get_theme_mod('flavor_whatsapp', '00123456789'); ?>" target="_blank" style="display: block; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-size: 0.9rem; text-decoration: none;">
+                    WhatsApp
                 </a>
             </div>
         </div>
         
         <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px; text-align: center;">
-            <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">© <?php echo date('Y'); ?> <?php echo get_bloginfo('name') ?: 'Tu Agencia'; ?>. Todos los derechos reservados. · Creado por <a href="https://lsbcreativa.com" target="_blank" rel="noopener" style="color: rgba(255,255,255,0.7); text-decoration: none; transition: color 0.3s;">LSB Creativa</a></p>
+            <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">© <?php echo date('Y'); ?> <?php echo get_bloginfo('name') ?: 'Tu Agencia'; ?>. Todos los derechos reservados.</p>
         </div>
     </div>
 </footer>
