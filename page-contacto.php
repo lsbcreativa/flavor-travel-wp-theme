@@ -7,8 +7,7 @@ get_header();
 $title = get_theme_mod('flavor_contacto_title', 'Contacto');
 $desc = get_theme_mod('flavor_contacto_desc', 'Estamos aquí para ayudarte a planificar tu próximo viaje.');
 $hero_image = get_theme_mod('flavor_contacto_image', 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1920&q=80');
-$address = get_theme_mod('flavor_contacto_address', 'Av. Principal 123, Lima, Perú');
-$hours = get_theme_mod('flavor_contacto_hours', 'Lunes a Viernes: 9am - 6pm');
+$address = get_theme_mod('flavor_contacto_address', 'Av. Principal 123, Ciudad');
 
 // Teléfono: primero busca en Página Contacto, luego en Contacto global
 $phone = get_theme_mod('flavor_contacto_phone', '');
@@ -262,19 +261,7 @@ $email_domain = isset($email_parts[1]) ? $email_parts[1] : '';
                     </div>
                 </div>
                 <?php endif; ?>
-                
-                <?php if ($hours): ?>
-                <div class="contact-item">
-                    <div class="contact-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
-                    <div class="contact-info">
-                        <h3>Horario de atención</h3>
-                        <p><?php echo esc_html($hours); ?></p>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
+
                 <div class="contact-buttons">
                     <a href="https://wa.me/<?php echo esc_attr($whatsapp); ?>?text=<?php echo urlencode('Hola, me gustaría más información sobre sus servicios.'); ?>" target="_blank" class="contact-btn contact-btn--whatsapp">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>

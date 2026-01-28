@@ -828,7 +828,7 @@ function flavor_customizer($wp_customize) {
     $wp_customize->add_control('flavor_contacto_desc', array('label' => 'Descripción', 'section' => 'flavor_contacto_page', 'type' => 'textarea'));
     $wp_customize->add_setting('flavor_contacto_image', array('default' => 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1920&q=80', 'sanitize_callback' => 'esc_url_raw'));
     $wp_customize->add_control('flavor_contacto_image', array('label' => 'Imagen de fondo (URL)', 'section' => 'flavor_contacto_page', 'type' => 'url'));
-    $wp_customize->add_setting('flavor_contacto_address', array('default' => 'CAL.LOS CRISANTEMOS NRO. 547 URB. JARDINES VIRU - CALLAO - BELLAVISTA', 'sanitize_callback' => 'sanitize_text_field'));
+    $wp_customize->add_setting('flavor_contacto_address', array('default' => 'Av. Principal 123, Ciudad', 'sanitize_callback' => 'sanitize_text_field'));
     $wp_customize->add_control('flavor_contacto_address', array('label' => 'Dirección', 'section' => 'flavor_contacto_page'));
     
     // Teléfono de la página contacto
