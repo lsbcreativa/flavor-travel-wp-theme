@@ -19,6 +19,24 @@ function flavor_scripts() {
 }
 add_action('wp_enqueue_scripts', 'flavor_scripts');
 
+// Sanitizador que permite iframes (para Google Maps)
+function flavor_sanitize_iframe($input) {
+    $allowed = array(
+        'iframe' => array(
+            'src' => array(),
+            'width' => array(),
+            'height' => array(),
+            'style' => array(),
+            'allowfullscreen' => array(),
+            'loading' => array(),
+            'referrerpolicy' => array(),
+            'frameborder' => array(),
+            'allow' => array(),
+        ),
+    );
+    return wp_kses($input, $allowed);
+}
+
 // ========== CPT Y TAXONOMÍAS ==========
 function flavor_cpt() {
     // Destino - CPT legacy, oculto del admin (no se usa)
@@ -866,8 +884,8 @@ function flavor_customizer($wp_customize) {
         ),
     ));
     
-    // Mapa
-    $wp_customize->add_setting('flavor_contacto_map', array('default' => '', 'sanitize_callback' => 'wp_kses_post'));
+    // Mapa (permite iframes)
+    $wp_customize->add_setting('flavor_contacto_map', array('default' => '', 'sanitize_callback' => 'flavor_sanitize_iframe'));
     $wp_customize->add_control('flavor_contacto_map', array('label' => 'Código iframe de Google Maps', 'section' => 'flavor_contacto_page', 'type' => 'textarea', 'description' => 'Pega el código embed de Google Maps'));
 
     // ========== HOME - HERO PRINCIPAL ==========
