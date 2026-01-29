@@ -113,8 +113,8 @@ global $wp_query; $total = $wp_query->found_posts;
 <!-- CTA -->
 <section style="background: var(--primary); padding: 60px 0;">
     <div class="container" style="text-align: center;">
-        <h2 style="font-family: var(--font-display); color: white; font-size: 1.75rem; margin-bottom: 12px;">¿Listo para tu próxima aventura?</h2>
-        <p style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">Contáctanos y diseñaremos el viaje perfecto para ti</p>
+        <h2 style="font-family: var(--font-display); color: white; font-size: 1.75rem; margin-bottom: 12px;">Llevamos la satisfacción de tus pasajeros al siguiente nivel</h2>
+        <p style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">Somos tu mayorista de confianza. Contáctanos.</p>
         <a href="https://wa.me/<?php echo get_theme_mod('flavor_whatsapp', '00123456789'); ?>" class="btn" style="background: white; color: var(--primary); padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;" target="_blank">
             <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
             Consultar ahora

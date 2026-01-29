@@ -231,7 +231,7 @@ $content_image_url = $content_image ? wp_get_attachment_image_url($content_image
 </section>
 
 <!-- INFO DE CONTACTO -->
-<section style="padding: 80px 0; background: #f8fafc;">
+<section style="padding: 80px 0 50px; background: #f8fafc;">
     <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
         <div class="contact-main-grid" style="display: grid; grid-template-columns: <?php echo $map_embed ? '1fr 1fr' : '1fr'; ?>; gap: 50px; align-items: start; <?php echo !$map_embed ? 'max-width: 600px; margin: 0 auto;' : ''; ?>">
             
@@ -288,7 +288,7 @@ $content_image_url = $content_image ? wp_get_attachment_image_url($content_image
 
 <!-- BLOQUE ADICIONAL -->
 <?php if ($content): ?>
-<section style="padding: 80px 0;">
+<section style="padding: 50px 0 80px;">
     <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
         <?php if ($layout === 'text-only' || empty($content_image_url)): ?>
             <div style="max-width: 800px; margin: 0 auto; text-align: center;">
