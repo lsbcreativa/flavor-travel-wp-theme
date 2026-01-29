@@ -111,9 +111,11 @@ $content_image_url = $content_image ? wp_get_attachment_image_url($content_image
     color: #0a1628;
     text-decoration: none;
     transition: color 0.3s;
+    cursor: pointer;
 }
 .contact-info a:hover {
     color: #2563eb;
+    text-decoration: underline;
 }
 .contact-buttons {
     display: flex;
@@ -150,15 +152,21 @@ $content_image_url = $content_image ? wp_get_attachment_image_url($content_image
     box-shadow: 0 12px 35px rgba(10, 22, 40, 0.3);
     background: #1e3a5f;
 }
+.map-wrapper {
+    background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(10, 22, 40, 0.3);
+}
 .map-container {
-    border-radius: 20px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
 }
 .map-container iframe {
     width: 100%;
     height: 400px;
     border: none;
+    display: block;
 }
 .content-grid {
     display: grid;
@@ -268,7 +276,7 @@ $content_image_url = $content_image ? wp_get_attachment_image_url($content_image
             
 <?php if ($map_embed): ?>
             <!-- MAPA DE GOOGLE -->
-            <div>
+            <div class="map-wrapper">
                 <div class="map-container">
                     <?php echo $map_embed; ?>
                 </div>
